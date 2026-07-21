@@ -368,7 +368,7 @@ local Library do
     end
 
     function Library.Disconnect(Name)
-        for Index, Entry in Library.Connections do
+        for Index, Entry in pairs(Library.Connections) do
             if Entry.Name == Name then
                 Entry.Connection:Disconnect()
                 TableRemove(Library.Connections, Index)
@@ -384,7 +384,7 @@ local Library do
             Properties = Properties,
         }
 
-        for Property, Value in Properties do
+        for Property, Value in pairs(Properties) do
             if type(Value) == "string" then
                 Instance[Property] = Library.Theme[Value]
             elseif type(Value) == "function" then
@@ -406,7 +406,7 @@ local Library do
             return Library.AddToTheme(Item, Properties)
         end
         ThemeData.Properties = Properties
-        for Property, Value in Properties do
+        for Property, Value in pairs(Properties) do
             if type(Value) == "string" then
                 Instance[Property] = Library.Theme[Value]
             elseif type(Value) == "function" then
@@ -420,8 +420,8 @@ local Library do
 
     function Library.ChangeTheme(Key, Color)
         Library.Theme[Key] = Color
-        for _, ThemeData in Library.ThemeItems do
-            for Property, Value in ThemeData.Properties do
+        for _, ThemeData in pairs(Library.ThemeItems) do
+            for Property, Value in pairs(ThemeData.Properties) do
                 if type(Value) == "string" and Value == Key then
                     ThemeData.Item[Property] = Color
                 elseif type(Value) == "function" then
@@ -458,7 +458,7 @@ local Library do
 
     function Library.GetConfig()
         local Config = {}
-        for Name, Value in Library.Flags do
+        for Name, Value in pairs(Library.Flags) do
             if type(Value) == "table" then
                 if Value.Key then
 
@@ -484,7 +484,7 @@ local Library do
         end
         Decoded = Err
 
-        for Name, Value in Decoded do
+        for Name, Value in pairs(Decoded) do
             local Setter = Library.SetFlags[Name]
             if Setter then
                 if type(Value) == "table" and Value.Key then
@@ -521,7 +521,7 @@ local Library do
             return {}
         end
         local Result = {}
-        for _, Path in listfiles(ConfigFolder) do
+        for _, Path in ipairs(listfiles(ConfigFolder)) do
             if StringSub(Path, -5) == ".json" then
 
                 local BaseStart = #Path - 5
@@ -649,10 +649,10 @@ local Library do
         local Descendants = Root:GetDescendants()
         TableInsert(Descendants, Root)
         local LastRecord
-        for _, Descendant in Descendants do
+        for _, Descendant in ipairs(Descendants) do
             local Properties = Tween.GetProperty(Descendant)
             if Properties then
-                for _, Property in Properties do
+                for _, Property in ipairs(Properties) do
                     LastRecord = Tween.FadeItem(Descendant, Property, Visible, Speed)
                 end
             end
@@ -726,7 +726,7 @@ local Library do
         setmetatable(Wrapper, Instances)
 
         if Properties then
-            for Property, Value in Properties do
+            for Property, Value in pairs(Properties) do
                 if Property ~= "Parent" then
                     Instance[Property] = Value
                 end
@@ -776,7 +776,7 @@ local Library do
         local function RemoveFromTheme(Obj)
             local ThemeData = Library.ThemeMap[Obj]
             if ThemeData then
-                for Index, T in Library.ThemeItems do
+                for Index, T in ipairs(Library.ThemeItems) do
                     if T == ThemeData then
                         TableRemove(Library.ThemeItems, Index)
                         break
@@ -788,7 +788,7 @@ local Library do
         end
 
         RemoveFromTheme(Instance)
-        for _, Descendant in Instance:GetDescendants() do
+        for _, Descendant in ipairs(Instance:GetDescendants()) do
             RemoveFromTheme(Descendant)
         end
 
@@ -994,7 +994,7 @@ local Library do
     end
 
     function DragController:Destroy()
-        for _, Connection in self.Connections do
+        for _, Connection in ipairs(self.Connections) do
             pcall(function()
                 if Connection.Connected then
                     Connection:Disconnect()
@@ -1068,14 +1068,14 @@ local Library do
         end
 
         if typeof(Library.MenuKeybind) == "EnumItem" and Input2.KeyCode == Library.MenuKeybind then
-            for _, Window in Library.Windows or {} do
+            for _, Window in pairs(Library.Windows or {}) do
                 if Window.ToggleByMenu then
                     Window:ToggleByMenu()
                 end
             end
         end
 
-        for _, Callback in Input.BeganListeners do
+        for _, Callback in ipairs(Input.BeganListeners) do
             Library.SafeCall(Callback, Input2)
         end
 
@@ -1211,7 +1211,7 @@ local Library do
     })
 
     local function ReflowStack(Immediate)
-        for Index, Notification in NotificationManager.Active do
+        for Index, Notification in ipairs(NotificationManager.Active) do
             local YOffset = 0
             for I = 1, Index - 1 do
                 local Prior = NotificationManager.Active[I]
@@ -1296,7 +1296,7 @@ local Library do
             if Index then
                 TableRemove(NotificationManager.Active, Index)
             end
-            for _, Conn in self.Connections do
+            for _, Conn in ipairs(self.Connections) do
                 pcall(function()
                     if Conn.Connection and Conn.Connection.Connected then
                         Conn.Connection:Disconnect()
@@ -1691,7 +1691,7 @@ local Library do
                 Padding = UDimNew(0, 8),
                 SortOrder = Enum.SortOrder.LayoutOrder,
             })
-            for _, Spec in Notification.Buttons do
+            for _, Spec in ipairs(Notification.Buttons) do
                 MakeAction(Notification, {
                     Text = Spec.Text or Spec[1],
                     Color = Spec.Color or Spec[2] or Library.Theme.Muted,
@@ -2002,7 +2002,7 @@ local Library do
 
         function List:Add(Keybind, DisplayName, DisplayKey)
 
-            for _, Entry in self.Entries do
+            for _, Entry in ipairs(self.Entries) do
                 if Entry.Keybind == Keybind then
                     return
                 end
@@ -2079,7 +2079,7 @@ local Library do
         end
 
         function List:Remove(Keybind)
-            for Index, Entry in self.Entries do
+            for Index, Entry in ipairs(self.Entries) do
                 if Entry.Keybind == Keybind then
                     Tween.FadeTree(Entry.Row.Instance, false, Library.FadeSpeed, function()
                         Entry.Row:Clean()
@@ -2101,7 +2101,7 @@ local Library do
 
     function Library.Unload()
 
-        for _, Entry in Library.Connections do
+        for _, Entry in pairs(Library.Connections) do
             local Ok = pcall(function()
                 if Entry.Connection and Entry.Connection.Connected then
                     Entry.Connection:Disconnect()
@@ -2110,16 +2110,16 @@ local Library do
         end
         Library.Connections = {}
 
-        for Instance in ActiveTweens do
+        for Instance in pairs(ActiveTweens) do
             pcall(Tween.Cancel, Instance)
         end
 
-        for _, Thread in Library.Threads do
+        for _, Thread in pairs(Library.Threads) do
             pcall(CoroutineClose, Thread)
         end
         Library.Threads = {}
 
-        for _, Holder in { Library.Holder, Library.UnusedHolder, Library.NotifHolder } do
+        for _, Holder in ipairs({ Library.Holder, Library.UnusedHolder, Library.NotifHolder }) do
             if Holder and Holder.Instance then
                 pcall(function()
                     Holder:Clean()
