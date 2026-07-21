@@ -45,6 +45,8 @@ local Library do
     local MathAbs = math.abs
     local MathSin = math.sin
     local MathCos = math.cos
+    local MathMin = math.min
+    local MathMax = math.max
 
     local TableInsert = table.insert
     local TableFind = table.find
@@ -658,7 +660,7 @@ local Library do
         if LastRecord and OnComplete then
             Library.Connect(LastRecord.Tween.Completed, function()
                 Library.SafeCall(OnComplete)
-            end, "fadetree_complete")
+            end)
         elseif OnComplete then
             Library.SafeCall(OnComplete)
         end
@@ -769,14 +771,27 @@ local Library do
         Tween.Cancel(Wrapper.Instance)
 
         local Instance = Wrapper.Instance
-        for Index, ThemeData in Library.ThemeItems do
-            if ThemeData.Item == Instance then
-                TableRemove(Library.ThemeItems, Index)
-                break
+        
+        -- Helper to remove theme records to prevent memory leaks/errors
+        local function RemoveFromTheme(Obj)
+            local ThemeData = Library.ThemeMap[Obj]
+            if ThemeData then
+                for Index, T in Library.ThemeItems do
+                    if T == ThemeData then
+                        TableRemove(Library.ThemeItems, Index)
+                        break
+                    end
+                end
+                Library.ThemeMap[Obj] = nil
             end
+            TransparencyMemory[Obj] = nil
         end
-        Library.ThemeMap[Instance] = nil
-        TransparencyMemory[Instance] = nil
+
+        RemoveFromTheme(Instance)
+        for _, Descendant in Instance:GetDescendants() do
+            RemoveFromTheme(Descendant)
+        end
+
         Instance:Destroy()
         Wrapper.Instance = nil
     end
@@ -917,7 +932,7 @@ local Library do
                 end
             end
         end, "drag_end_" .. tostring(self))
-        TableInsert(self.Connections, EndConnection)
+        TableInsert(self.Connections, EndConnection.Connection)
     end
 
     function DragController:_UpdateTarget(InputPosition)
@@ -1283,8 +1298,8 @@ local Library do
             end
             for _, Conn in self.Connections do
                 pcall(function()
-                    if Conn.Connected then
-                        Conn:Disconnect()
+                    if Conn.Connection and Conn.Connection.Connected then
+                        Conn.Connection:Disconnect()
                     end
                 end)
             end
