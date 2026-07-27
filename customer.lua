@@ -1036,11 +1036,20 @@ local Library do
                 end
                 Closed = true
 
-                Items["ProgressBar"]:Tween(nil, {Size = UDim2New(0, 0, 0, 5)})
+                Items["Notification"].Instance.AutomaticSize = Enum.AutomaticSize.None
                 Items["Notification"]:Tween(
                     TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-                    {Size = UDim2FromOffset(Items["Notification"].Instance.AbsoluteSize.X, 0)}
+                    {Size = UDim2FromOffset(330, 0), BackgroundTransparency = 1}
                 )
+                Items["Header"]:Tween(
+                    TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                    {BackgroundTransparency = 1}
+                )
+                TweenService:Create(Items["Title"].Instance, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+                
+                if Items["DescText"] then
+                    TweenService:Create(Items["DescText"].Instance, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+                end
 
                 task.delay(0.35, function()
                     Items["Notification"]:Clean()
@@ -2024,18 +2033,21 @@ local Library do
                     ScaleType = Enum.ScaleType.Slice,
                     ImageTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 10, 1, 10),
+                    Size = UDim2New(1, 30, 1, 30),
                     AnchorPoint = Vector2New(0.5, 0.5),
                     Image = "http://www.roblox.com/asset/?id=18245826428",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
+                    ZIndex = 0,
                     BorderSizePixel = 0,
                     SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
                 }):AddToTheme({ImageColor3 = "Accent"})
             end
 
+            local HoverColor = FromRGB(32, 33, 42)
+
             Items["Button"].Instance.MouseEnter:Connect(function()
-                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["Hover"]})
+                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = HoverColor})
                 Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 0.8})
             end)
 
@@ -2045,9 +2057,9 @@ local Library do
             end)
 
             Items["Button"].Instance.MouseButton1Down:Connect(function()
-                Items["Button"]:Tween(TweenInfo.new(0.1, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["Accent"]}, true)
+                Items["Button"]:Tween(TweenInfo.new(0.1, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["Accent"]})
                 task.wait(0.1)
-                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["Hover"]})
+                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = HoverColor})
                 Library:SafeCall(Button.Callback)
             end)
 
