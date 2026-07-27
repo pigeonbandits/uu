@@ -2049,52 +2049,69 @@ local Library do
                 Section = self,
 
                 Name = Data.Name or Data.name or "Button",
-                Callback = Data.Callback or Data.callback or function() end,
+                Callback = Data.Callback or Data.callback or function() end
             }
 
-            local Items = {} do
+            local Items = { } do 
                 Items["Button"] = Instances:Create("TextButton", {
                     Parent = Button.Section.Items["Content"].Instance,
                     Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Library.Theme["ActiveText"],
-                    Text = Button.Name,
+                    TextColor3 = Library.Theme["Text"],
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
                     AutoButtonColor = false,
-                    BackgroundColor3 = Library.Theme["ElementBackground"],
                     Size = UDim2New(1, 0, 0, 30),
+                    Selectable = false,
+                    Active = false,
                     BorderSizePixel = 0,
-                    TextSize = 14
-                }):AddToTheme({BackgroundColor3 = "ElementBackground", TextColor3 = "ActiveText"})
-
+                    BackgroundColor3 = Library.Theme["ElementBackground"]
+                }):AddToTheme({BackgroundColor3 = 'ElementBackground'})
+                
+                Items["Text"] = Instances:Create("TextLabel", {
+                    Parent = Items["Button"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = Button.Name,
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Size = UDim2New(0, 0, 0, 15),
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 16
+                }):AddToTheme({TextColor3 = 'Text'})
+                
                 Instances:Create("UICorner", {
                     Parent = Items["Button"].Instance,
                     Name = "\0",
                     CornerRadius = UDimNew(0, 6)
                 })
-
+                
                 Items["Stroke"] = Instances:Create("UIStroke", {
                     Parent = Items["Button"].Instance,
                     Name = "\0",
                     Color = Library.Theme["Stroke"],
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                }):AddToTheme({Color = "Stroke"})
+                }):AddToTheme({Color = 'Stroke'})
+            end 
+
+            function Button:SetVisibility(Bool)
+                Items["Button"].Instance.Visible = Bool
             end
 
-            local HoverColor = FromRGB(32, 33, 42)
-
-            Items["Button"].Instance.MouseEnter:Connect(function()
-                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = HoverColor})
-            end)
-
-            Items["Button"].Instance.MouseLeave:Connect(function()
-                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["ElementBackground"]})
-            end)
+            function Button:Press()
+                Items["Stroke"]:ChangeItemTheme({Color = "Accent"})
+                Items["Stroke"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Color = Library.Theme.Accent})
+                task.wait(0.1)
+                Library:SafeCall(Button.Callback)
+                Items["Stroke"]:ChangeItemTheme({Color = "Stroke"})
+                Items["Stroke"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Color = Library.Theme.Stroke})
+            end
 
             Items["Button"].Instance.MouseButton1Down:Connect(function()
-                Items["Button"]:Tween(TweenInfo.new(0.1, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["Accent"]})
-                task.wait(0.1)
-                Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = HoverColor})
-                Library:SafeCall(Button.Callback)
+                Button:Press()
             end)
 
             TableInsert(Button.Section.Items, Button)
@@ -2102,7 +2119,7 @@ local Library do
         end
 
         Library.Sections.Slider = function(self, Data)
-            Data = Data or {}
+            Data = Data or { }
 
             local Slider = {
                 Window = self.Window,
@@ -2112,178 +2129,221 @@ local Library do
                 Name = Data.Name or Data.name or "Slider",
                 Flag = Data.Flag or Data.flag or Library:NextFlag(),
                 Min = Data.Min or Data.min or 0,
+                Default = Data.Default or Data.default or 0,
                 Max = Data.Max or Data.max or 100,
-                Default = Data.Default or Data.default or Data.Min or 0,
+                Suffix = Data.Suffix or Data.suffix or "",
+                Decimals = Data.Decimals or Data.decimals or 1,
                 Callback = Data.Callback or Data.callback or function() end,
 
-                Value = Data.Default or Data.default or Data.Min or 0,
-                Dragging = false
+                Value = 0,
+                Sliding = false
             }
 
-            local Items = {} do
-                Items["Slider"] = Instances:Create("TextButton", {
+            local Items = { } do 
+                Items["Slider"] = Instances:Create("Frame", {
                     Parent = Slider.Section.Items["Content"].Instance,
                     Name = "\0",
-                    Text = "",
-                    AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 38),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 0, 0, 20),
                     BorderSizePixel = 0
                 })
-
+                
                 Items["Text"] = Instances:Create("TextLabel", {
                     Parent = Items["Slider"].Instance,
                     Name = "\0",
                     FontFace = Library.Font,
-                    TextColor3 = Library.Theme["ActiveText"],
+                    TextColor3 = Library.Theme["Text"],
+                    BorderColor3 = FromRGB(0, 0, 0),
                     Text = Slider.Name,
-                    Size = UDim2New(1, -50, 0, 15),
-                    AnchorPoint = Vector2New(0, 0),
-                    BorderSizePixel = 0,
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Size = UDim2New(0, 0, 0, 15),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0, 0, 0, 0),
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = "ActiveText"})
-
-                Items["ValueText"] = Instances:Create("TextLabel", {
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 16
+                }):AddToTheme({TextColor3 = 'Text'})
+                
+                Items["RealSlider"] = Instances:Create("TextButton", {
                     Parent = Items["Slider"].Instance,
                     Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = Library.Theme["InactiveText"],
-                    Text = tostring(Slider.Default) .. "%",
-                    Size = UDim2New(0, 50, 0, 15),
-                    AnchorPoint = Vector2New(1, 0),
-                    BorderSizePixel = 0,
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(1, 0, 0, 0),
-                    TextXAlignment = Enum.TextXAlignment.Right,
-                    TextSize = 14
-                }):AddToTheme({TextColor3 = "InactiveText"})
-
-                Items["Track"] = Instances:Create("Frame", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0, 1),
-                    Position = UDim2New(0, 0, 1, -4),
-                    Size = UDim2New(1, 0, 0, 12),
+                    Active = false,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    AutoButtonColor = false,
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, -40, 0.5, 0),
+                    Size = UDim2New(0, 200, 0, 9),
+                    Selectable = false,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["ElementBackground"]
-                }):AddToTheme({BackgroundColor3 = "ElementBackground"})
-
+                }):AddToTheme({BackgroundColor3 = 'ElementBackground'})
+                
                 Instances:Create("UICorner", {
-                    Parent = Items["Track"].Instance,
+                    Parent = Items["RealSlider"].Instance,
                     Name = "\0",
-                    CornerRadius = UDimNew(1, 0)
+                    CornerRadius = UDimNew(0, 6)
                 })
                 
                 Instances:Create("UIStroke", {
-                    Parent = Items["Track"].Instance,
+                    Parent = Items["RealSlider"].Instance,
                     Name = "\0",
                     Color = Library.Theme["Stroke"],
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                }):AddToTheme({Color = "Stroke"})
-
-                Items["Fill"] = Instances:Create("Frame", {
-                    Parent = Items["Track"].Instance,
+                }):AddToTheme({Color = 'Stroke'})
+                
+                Items["Accent"] = Instances:Create("Frame", {
+                    Parent = Items["RealSlider"].Instance,
                     Name = "\0",
-                    BackgroundColor3 = Library.Theme["Accent"],
-                    Size = UDim2New(0.5, 0, 1, 0),
-                    BorderSizePixel = 0
-                }):AddToTheme({BackgroundColor3 = "Accent"})
-
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0.6000000238418579, 0, 1, 0),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Library.Theme["Accent"]
+                }):AddToTheme({BackgroundColor3 = 'Accent'})
+                
                 Instances:Create("UICorner", {
-                    Parent = Items["Fill"].Instance,
+                    Parent = Items["Accent"].Instance,
                     Name = "\0",
-                    CornerRadius = UDimNew(1, 0)
+                    CornerRadius = UDimNew(0, 6)
                 })
                 
-                Items["Circle"] = Instances:Create("Frame", {
-                    Parent = Items["Fill"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    BackgroundColor3 = FromRGB(0, 0, 0),
-                    Position = UDim2New(1, 0, 0.5, 0),
-                    Size = UDim2New(0, 8, 0, 8),
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UICorner", {
-                    Parent = Items["Circle"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(1, 0)
-                })
-
                 Items["Glow"] = Instances:Create("ImageLabel", {
-                    Parent = Items["Circle"].Instance,
+                    Parent = Items["Accent"].Instance,
                     Name = "\0",
                     ImageColor3 = Library.Theme["Accent"],
                     ScaleType = Enum.ScaleType.Slice,
-                    ImageTransparency = 1,
+                    ImageTransparency = 0.800000011920929,
+                    BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 25, 1, 25),
                     AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "rbxassetid://5028857084",
+                    Image = "rbxassetid://18245826428",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
-                    ZIndex = 0,
+                    ZIndex = 2,
                     BorderSizePixel = 0,
-                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
-                }):AddToTheme({ImageColor3 = "Accent"})
+                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
+                }):AddToTheme({ImageColor3 = 'Accent'})
+                
+                Items["Dragger"] = Instances:Create("Frame", {
+                    Parent = Items["Accent"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Position = UDim2New(1, -4, 0.5, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0, 13, 0, 13),
+                    BorderSizePixel = 0
+                })
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["Dragger"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+                
+                Items["Glow2"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Dragger"].Instance,
+                    Name = "\0",
+                    ImageColor3 = Library.Theme["Accent"],
+                    ScaleType = Enum.ScaleType.Slice,
+                    ImageTransparency = 0.800000011920929,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 25, 1, 25),
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Image = "rbxassetid://18245826428",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
+                }):AddToTheme({ImageColor3 = 'Accent'})
+                
+                Items["Value"] = Instances:Create("TextLabel", {
+                    Parent = Items["Slider"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["Text"],
+                    TextTransparency = 0.5,
+                    Text = "50%",
+                    Size = UDim2New(0, 0, 0, 15),
+                    AnchorPoint = Vector2New(1, 0.5),
+                    BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(1, 0, 0.5, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 16
+                }):AddToTheme({TextColor3 = 'Text'})                
+            end
+
+            function Slider:Get()
+                return Slider.Value 
+            end
+
+            function Slider:SetVisibility(Bool)
+                Items["Slider"].Instance.Visible = Bool
             end
 
             function Slider:Set(Value)
-                Slider.Value = math.clamp(math.round(Value), Slider.Min, Slider.Max)
+                Slider.Value = math.round(MathClamp(Value, Slider.Min, Slider.Max))
                 Library.Flags[Slider.Flag] = Slider.Value
-                
+
                 local Percent = (Slider.Value - Slider.Min) / (Slider.Max - Slider.Min)
-                Items["ValueText"].Instance.Text = tostring(Slider.Value) .. "%"
-                Items["Fill"]:Tween(TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(Percent, 0, 1, 0)})
-                
-                Library:SafeCall(Slider.Callback, Slider.Value)
+                Items["Accent"]:Tween(TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(Percent, 0, 1, 0)})
+                Items["Value"].Instance.Text = tostring(Slider.Value) .. Slider.Suffix
+
+                if Slider.Callback then 
+                    Library:SafeCall(Slider.Callback, Slider.Value)
+                end
             end
 
-            local function Update(Input)
-                local Percent = math.clamp((Input.Position.X - Items["Track"].Instance.AbsolutePosition.X) / Items["Track"].Instance.AbsoluteSize.X, 0, 1)
-                local Value = Slider.Min + (Slider.Max - Slider.Min) * Percent
+            local InputChanged 
+            
+            Items["RealSlider"].Instance.InputBegan:Connect(function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                    Slider.Sliding = true
+
+                    local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+                    local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
+
+                    Slider:Set(Value)
+
+                    if InputChanged then
+                        return
+                    end
+
+                    InputChanged = Input.Changed:Connect(function()
+                        if Input.UserInputState == Enum.UserInputState.End then
+                            Slider.Sliding = false
+
+                            InputChanged:Disconnect()
+                            InputChanged = nil
+                        end
+                    end)
+                end
+            end)
+
+            Library:Connect(UserInputService.InputChanged, function(Input)
+                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                    if Slider.Sliding then
+                        local SizeX = (Input.Position.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+                        local Value = ((Slider.Max - Slider.Min) * SizeX) + Slider.Min
+
+                        Slider:Set(Value)
+                    end
+                end
+            end)
+
+            if Slider.Default then
+                Slider:Set(Slider.Default)
+            end
+
+            Library.SetFlags[Slider.Flag] = function(Value)
                 Slider:Set(Value)
             end
 
-            Items["Slider"].Instance.InputBegan:Connect(function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                    Slider.Dragging = true
-                    Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 0.8})
-                    Update(Input)
-                end
-            end)
-
-            Items["Slider"].Instance.InputEnded:Connect(function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                    Slider.Dragging = false
-                    Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 1})
-                end
-            end)
-
-            UserInputService.InputChanged:Connect(function(Input)
-                if Slider.Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
-                    Update(Input)
-                end
-            end)
-            
-            Items["Slider"].Instance.MouseEnter:Connect(function()
-                if not Slider.Dragging then
-                    Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 0.9})
-                end
-            end)
-            
-            Items["Slider"].Instance.MouseLeave:Connect(function()
-                if not Slider.Dragging then
-                    Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 1})
-                end
-            end)
-
-            Slider:Set(Slider.Default)
             TableInsert(Slider.Section.Items, Slider)
-            return Slider
+            return Slider 
         end
     end
 end
