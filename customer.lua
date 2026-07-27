@@ -577,10 +577,10 @@ local Library do
                 Items["Notification"] = Instances:Create("Frame", {
                     Parent = Library.NotifHolder.Instance,
                     Name = "\0",
-                    AutomaticSize = Enum.AutomaticSize.XY,
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = Library.Theme["PageBackground"],
                     ClipsDescendants = true,
-                    Size = UDim2FromOffset(1, 30),
+                    Size = UDim2FromOffset(330, 30),
                     BorderSizePixel = 0
                 })
 
@@ -604,9 +604,9 @@ local Library do
                 Items["Header"] = Instances:Create("Frame", {
                     Parent = Items["Notification"].Instance,
                     Name = "\0",
-                    AutomaticSize = Enum.AutomaticSize.XY,
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundColor3 = Library.Theme["PageBackground"],
-                    Size = UDim2FromOffset(1, 30),
+                    Size = UDim2New(1, 0, 0, 30),
                     BorderSizePixel = 0
                 })
 
@@ -1782,6 +1782,8 @@ local Library do
                             ImageColor3 = Library.Theme["ActiveText"],
                             Position = UDim2New(0, 10, 0.5, 0),
                             Size = UDim2FromOffset(14, 14),
+                            ScaleType = Enum.ScaleType.Fit,
+                            ResampleMode = Enum.ResamplerMode.Default,
                             BorderSizePixel = 0
                         })
                     end
