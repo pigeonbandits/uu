@@ -461,7 +461,7 @@ local Library do
                     Position = UDim2New(0.5, 0, 0, 20),
                     Size = UDim2New(0, 0, 0, 35),
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.X,
+                    AutomaticSize = Enum.AutomaticSize.None,
                     BackgroundColor3 = Library.Theme["Background"]
                 }):AddToTheme({BackgroundColor3 = "Background"})
 
@@ -505,13 +505,17 @@ local Library do
                     BackgroundTransparency = 1,
                     Position = UDim2New(0, 34, 0.5, -1),
                     BorderSizePixel = 0,
-                    AutomaticSize = Enum.AutomaticSize.X,
+                    AutomaticSize = Enum.AutomaticSize.None,
                     TextSize = 18
                 })
             end
 
             function Watermark:SetText(Text)
                 Items["Text"].Instance.Text = tostring(Text)
+                local BoundsX = Items["Text"].Instance.TextBounds.X
+                local TargetWidth = 8 + 34 + BoundsX + 8
+                Items["Text"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(0, BoundsX, 0, 15)})
+                Items["Watermark"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(0, TargetWidth, 0, 35)})
             end
 
             function Watermark:SetVisibility(Bool)
@@ -525,8 +529,24 @@ local Library do
                 Items["Watermark"].Instance.Position = UDim2New(0, CenterPosition.X, 0, CenterPosition.Y)
             end
 
+            Watermark.BaseText = Name
             Watermark:SetText(Name)
             Watermark:SetCenter()
+            
+            local Frames = 0
+            game:GetService("RunService").RenderStepped:Connect(function()
+                Frames = Frames + 1
+            end)
+            
+            task.spawn(function()
+                while task.wait(1) do
+                    if Watermark.BaseText:find("{fps}") or Watermark.BaseText:find("{time}") then
+                        local formatted = Watermark.BaseText:gsub("{fps}", tostring(Frames)):gsub("{time}", os.date("%X"))
+                        Watermark:SetText(formatted)
+                    end
+                    Frames = 0
+                end
+            end)
 
             return Watermark
         end
@@ -1337,9 +1357,8 @@ local Library do
                     Name = "\0",
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundColor3 = FromRGB(247, 247, 247),
                     BackgroundTransparency = 1,
-                    ClipsDescendants = true,
+                    ClipsDescendants = false,
                     Size = UDim2FromOffset(55, 60),
                     BorderSizePixel = 0
                 })
@@ -1395,6 +1414,22 @@ local Library do
                     Position = UDim2New(0.5, 0, 1, -2),
                     Size = UDim2FromOffset(25, 2),
                     BorderSizePixel = 0
+                })
+
+                Items["TabPillGlow"] = Instances:Create("ImageLabel", {
+                    Parent = Items["TabPill"].Instance,
+                    Name = "\0",
+                    ImageColor3 = FromRGB(254, 254, 254),
+                    ScaleType = Enum.ScaleType.Slice,
+                    ImageTransparency = 1,
+                    Size = UDim2New(1, 16, 1, 16),
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Image = "rbxassetid://5028857084",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    ZIndex = 0,
+                    BorderSizePixel = 0,
+                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
                 })
 
                 Instances:Create("UICorner", {
@@ -1519,6 +1554,7 @@ local Library do
                     Name = "\0",
                     AutomaticSize = Enum.AutomaticSize.X,
                     BackgroundTransparency = 1,
+                    ClipsDescendants = false,
                     Text = "",
                     AutoButtonColor = false,
                     Size = UDim2FromOffset(80, 49),
@@ -1565,6 +1601,22 @@ local Library do
                     Position = UDim2New(0.5, 0, 1, -2),
                     Size = UDim2FromOffset(34, 2),
                     BorderSizePixel = 0
+                })
+
+                Items["SubTabPillGlow"] = Instances:Create("ImageLabel", {
+                    Parent = Items["SubTabPill"].Instance,
+                    Name = "\0",
+                    ImageColor3 = FromRGB(254, 254, 254),
+                    ScaleType = Enum.ScaleType.Slice,
+                    ImageTransparency = 1,
+                    Size = UDim2New(1, 16, 1, 16),
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Image = "rbxassetid://5028857084",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    ZIndex = 0,
+                    BorderSizePixel = 0,
+                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
                 })
 
                 Instances:Create("UICorner", {
@@ -2026,35 +2078,16 @@ local Library do
                     Color = Library.Theme["Stroke"],
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 }):AddToTheme({Color = "Stroke"})
-
-                Items["Glow"] = Instances:Create("ImageLabel", {
-                    Parent = Items["Button"].Instance,
-                    Name = "\0",
-                    ImageColor3 = Library.Theme["Accent"],
-                    ScaleType = Enum.ScaleType.Slice,
-                    ImageTransparency = 1,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 30, 1, 30),
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "rbxassetid://5028857084",
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
-                    ZIndex = 0,
-                    BorderSizePixel = 0,
-                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
-                }):AddToTheme({ImageColor3 = "Accent"})
             end
 
             local HoverColor = FromRGB(32, 33, 42)
 
             Items["Button"].Instance.MouseEnter:Connect(function()
                 Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = HoverColor})
-                Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 0.8})
             end)
 
             Items["Button"].Instance.MouseLeave:Connect(function()
                 Items["Button"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundColor3 = Library.Theme["ElementBackground"]})
-                Items["Glow"]:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 1})
             end)
 
             Items["Button"].Instance.MouseButton1Down:Connect(function()
@@ -2168,9 +2201,9 @@ local Library do
                 Items["Circle"] = Instances:Create("Frame", {
                     Parent = Items["Fill"].Instance,
                     Name = "\0",
-                    AnchorPoint = Vector2New(1, 0.5),
+                    AnchorPoint = Vector2New(0.5, 0.5),
                     BackgroundColor3 = FromRGB(0, 0, 0),
-                    Position = UDim2New(1, -2, 0.5, 0),
+                    Position = UDim2New(1, 0, 0.5, 0),
                     Size = UDim2New(0, 8, 0, 8),
                     BorderSizePixel = 0
                 })
