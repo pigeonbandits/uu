@@ -109,7 +109,9 @@ local Library do
             ["ElementBackground"] = FromRGB(24, 25, 32),
             ["Stroke"] = FromRGB(28, 30, 38),
             ["Accent"] = FromRGB(254, 254, 254),
-            ["AccentDim"] = FromRGB(147, 147, 147)
+            ["AccentDim"] = FromRGB(147, 147, 147),
+            ["NotifSuccess"] = FromRGB(47, 255, 0),
+            ["NotifWarning"] = FromRGB(255, 214, 10)
         }
     }
 
@@ -292,22 +294,6 @@ local Library do
             end)
 
             return Dragging
-        end
-
-        Instances.OnHover = function(self, Function)
-            if not self.Instance then
-                return
-            end
-
-            return Library:Connect(self.Instance.MouseEnter, Function)
-        end
-
-        Instances.OnHoverLeave = function(self, Function)
-            if not self.Instance then
-                return
-            end
-
-            return Library:Connect(self.Instance.MouseLeave, Function)
         end
     end
 
@@ -545,6 +531,508 @@ local Library do
             return Watermark
         end
 
+        Library.Notify = function(self, Data)
+            Data = Data or {}
+
+            local Title = Data.Title or "Notification"
+            local Description = Data.Description or ""
+            local Duration = Data.Duration or 5
+            local Type = Data.Type or "Success"
+            local Buttons = Data.Buttons or {}
+            local Callback = Data.Callback or function() end
+
+            local NotifColor = Type == "Warning" and Library.Theme["NotifWarning"] or Library.Theme["NotifSuccess"]
+            local NotifIcon = Type == "Warning" and "rbxassetid://70479764730792" or "rbxassetid://92431556586885"
+
+            if not Library.NotifHolder then
+                Library.NotifHolder = Instances:Create("Frame", {
+                    Parent = Library.Holder.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 1)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Library.NotifHolder.Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Library.NotifHolder.Instance,
+                    Name = "\0",
+                    PaddingLeft = UDimNew(0, 12),
+                    PaddingTop = UDimNew(0, 12)
+                })
+            end
+
+            local Notif = {}
+            local Collapsed = false
+            local Closed = false
+
+            local Items = {} do
+                Items["Notification"] = Instances:Create("Frame", {
+                    Parent = Library.NotifHolder.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundColor3 = Library.Theme["PageBackground"],
+                    ClipsDescendants = true,
+                    Size = UDim2FromOffset(1, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0"
+                })
+
+                Items["Header"] = Instances:Create("Frame", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundColor3 = Library.Theme["PageBackground"],
+                    Size = UDim2FromOffset(1, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    PaddingLeft = UDimNew(0, 6),
+                    PaddingRight = UDimNew(0, 4),
+                    PaddingTop = UDimNew(0, 4)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    Padding = UDimNew(0, 24),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                local Holder = Instances:Create("Frame", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(64, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Holder.Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    Padding = UDimNew(0, 2),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                local IconHolder = Instances:Create("Frame", {
+                    Parent = Holder.Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(30, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("ImageLabel", {
+                    Parent = IconHolder.Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    BackgroundTransparency = 1,
+                    Image = NotifIcon,
+                    ImageColor3 = NotifColor,
+                    Position = UDim2FromScale(0.5, 0.5),
+                    Size = UDim2FromOffset(20, 20),
+                    BorderSizePixel = 0
+                })
+
+                local TitleHolder = Instances:Create("Frame", {
+                    Parent = Holder.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = TitleHolder.Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    VerticalAlignment = Enum.VerticalAlignment.Center
+                })
+
+                Items["Title"] = Instances:Create("TextLabel", {
+                    Parent = TitleHolder.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    FontFace = Library.Font,
+                    RichText = true,
+                    Size = UDim2FromOffset(1, 1),
+                    Text = Title,
+                    TextColor3 = Library.Theme["ActiveText"],
+                    TextSize = 14,
+                    BorderSizePixel = 0
+                })
+
+                local ControlHolder = Instances:Create("Frame", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = ControlHolder.Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    Padding = UDimNew(0, 2),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Items["CollapseButton"] = Instances:Create("TextButton", {
+                    Parent = ControlHolder.Instance,
+                    Name = "\0",
+                    Text = "",
+                    AutoButtonColor = false,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(30, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("ImageLabel", {
+                    Parent = Items["CollapseButton"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    BackgroundTransparency = 1,
+                    Image = "rbxassetid://118645616697622",
+                    ImageColor3 = FromRGB(66, 68, 86),
+                    Position = UDim2FromScale(0.5, 0.5),
+                    Size = UDim2FromOffset(20, 20),
+                    BorderSizePixel = 0
+                })
+
+                Items["CloseButton"] = Instances:Create("TextButton", {
+                    Parent = ControlHolder.Instance,
+                    Name = "\0",
+                    Text = "",
+                    AutoButtonColor = false,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(30, 30),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("ImageLabel", {
+                    Parent = Items["CloseButton"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    BackgroundTransparency = 1,
+                    Image = "rbxassetid://124971904960139",
+                    ImageColor3 = FromRGB(66, 68, 86),
+                    Position = UDim2FromScale(0.5, 0.5),
+                    Size = UDim2FromOffset(18, 18),
+                    BorderSizePixel = 0
+                })
+
+                Items["DescriptionHolder"] = Instances:Create("Frame", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 10),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["DescriptionHolder"].Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 8),
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    Wraps = true
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["DescriptionHolder"].Instance,
+                    Name = "\0",
+                    PaddingBottom = UDimNew(0, 12),
+                    PaddingLeft = UDimNew(0, 12)
+                })
+
+                local TextHolder = Instances:Create("Frame", {
+                    Parent = Items["DescriptionHolder"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 1, 0, 10),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = TextHolder.Instance,
+                    Name = "\0",
+                    SortOrder = Enum.SortOrder.LayoutOrder,
+                    Wraps = true
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = TextHolder.Instance,
+                    Name = "\0",
+                    PaddingLeft = UDimNew(0, 26)
+                })
+
+                Items["DescText"] = Instances:Create("TextLabel", {
+                    Parent = TextHolder.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    FontFace = Library.FontRegular,
+                    RichText = true,
+                    Size = UDim2FromOffset(1, 1),
+                    Text = Description,
+                    TextColor3 = FromRGB(66, 68, 86),
+                    TextSize = 14,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    BorderSizePixel = 0
+                })
+
+                if #Buttons > 0 then
+                    local ButtonHolder = Instances:Create("Frame", {
+                        Parent = Items["DescriptionHolder"].Instance,
+                        Name = "\0",
+                        AutomaticSize = Enum.AutomaticSize.XY,
+                        BackgroundTransparency = 1,
+                        Size = UDim2FromOffset(1, 10),
+                        BorderSizePixel = 0
+                    })
+
+                    Instances:Create("UIListLayout", {
+                        Parent = ButtonHolder.Instance,
+                        Name = "\0",
+                        FillDirection = Enum.FillDirection.Horizontal,
+                        Padding = UDimNew(0, 8),
+                        SortOrder = Enum.SortOrder.LayoutOrder,
+                        Wraps = true
+                    })
+
+                    Instances:Create("UIPadding", {
+                        Parent = ButtonHolder.Instance,
+                        Name = "\0",
+                        PaddingLeft = UDimNew(0, 26)
+                    })
+
+                    for i, BtnData in Buttons do
+                        local IsPrimary = (i == 1)
+
+                        local Btn = Instances:Create("TextButton", {
+                            Parent = ButtonHolder.Instance,
+                            Name = "\0",
+                            AutomaticSize = Enum.AutomaticSize.XY,
+                            BackgroundColor3 = IsPrimary and NotifColor or FromRGB(0, 0, 0),
+                            BackgroundTransparency = IsPrimary and 0.95 or 1,
+                            Text = "",
+                            AutoButtonColor = false,
+                            Size = UDim2FromOffset(1, 1),
+                            BorderSizePixel = 0
+                        })
+
+                        Instances:Create("UICorner", {
+                            Parent = Btn.Instance,
+                            Name = "\0",
+                            CornerRadius = UDimNew(0, 6)
+                        })
+
+                        if not IsPrimary then
+                            Instances:Create("UIStroke", {
+                                Parent = Btn.Instance,
+                                Name = "\0",
+                                Color = FromRGB(66, 68, 86)
+                            })
+                        end
+
+                        local BtnText = Instances:Create("TextLabel", {
+                            Parent = Btn.Instance,
+                            Name = "\0",
+                            AutomaticSize = Enum.AutomaticSize.XY,
+                            BackgroundTransparency = 1,
+                            FontFace = Library.Font,
+                            Size = UDim2FromOffset(1, 1),
+                            Text = BtnData.Name or "Button",
+                            TextColor3 = IsPrimary and NotifColor or FromRGB(66, 68, 86),
+                            TextSize = 14,
+                            BorderSizePixel = 0
+                        })
+
+                        Instances:Create("UIPadding", {
+                            Parent = BtnText.Instance,
+                            Name = "\0",
+                            PaddingBottom = UDimNew(0, 6),
+                            PaddingLeft = UDimNew(0, 8),
+                            PaddingRight = UDimNew(0, 8),
+                            PaddingTop = UDimNew(0, 6)
+                        })
+
+                        Instances:Create("UIListLayout", {
+                            Parent = Btn.Instance,
+                            Name = "\0",
+                            FillDirection = Enum.FillDirection.Horizontal,
+                            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                            SortOrder = Enum.SortOrder.LayoutOrder,
+                            VerticalAlignment = Enum.VerticalAlignment.Center
+                        })
+
+                        Btn:Connect("MouseButton1Down", function()
+                            if BtnData.Callback then
+                                Library:SafeCall(BtnData.Callback)
+                            end
+                            Notif:Close()
+                        end)
+                    end
+                end
+
+                Items["ProgressHolder"] = Instances:Create("Frame", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundColor3 = Library.Theme["Background"],
+                    Size = UDim2New(1, 1, 0, 20),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["ProgressHolder"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 8)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["ProgressHolder"].Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["ProgressHolder"].Instance,
+                    Name = "\0",
+                    PaddingRight = UDimNew(0, 12)
+                })
+
+                local ProgressInner = Instances:Create("Frame", {
+                    Parent = Items["ProgressHolder"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 1),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = ProgressInner.Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 6),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                local ProgressBarFrame = Instances:Create("Frame", {
+                    Parent = ProgressInner.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 1, 0, 5),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = ProgressBarFrame.Instance,
+                    Name = "\0"
+                })
+
+                Items["ProgressBar"] = Instances:Create("Frame", {
+                    Parent = ProgressBarFrame.Instance,
+                    Name = "\0",
+                    BackgroundColor3 = NotifColor,
+                    Size = UDim2New(1, 0, 0, 5),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["ProgressBar"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 4)
+                })
+            end
+
+            function Notif:Close()
+                if Closed then
+                    return
+                end
+                Closed = true
+
+                Items["ProgressBar"]:Tween(nil, {Size = UDim2New(0, 0, 0, 5)})
+                Items["Notification"]:Tween(
+                    TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+                    {Size = UDim2FromOffset(Items["Notification"].Instance.AbsoluteSize.X, 0)}
+                )
+
+                task.delay(0.35, function()
+                    Items["Notification"]:Clean()
+                end)
+            end
+
+            function Notif:Collapse()
+                Collapsed = not Collapsed
+                Items["DescriptionHolder"].Instance.Visible = not Collapsed
+            end
+
+            Items["CloseButton"]:Connect("MouseButton1Down", function()
+                Notif:Close()
+            end)
+
+            Items["CollapseButton"]:Connect("MouseButton1Down", function()
+                Notif:Collapse()
+            end)
+
+            if Duration > 0 then
+                Items["ProgressBar"]:Tween(
+                    TweenInfo.new(Duration, Enum.EasingStyle.Linear),
+                    {Size = UDim2New(0, 0, 0, 5)}
+                )
+
+                task.delay(Duration, function()
+                    Notif:Close()
+                end)
+            end
+
+            return Notif
+        end
+
         Library.Window = function(self, Data)
             Data = Data or {}
 
@@ -552,8 +1040,6 @@ local Library do
                 Name = Data.Name or "Ironite",
                 GameName = Data.GameName or "",
                 Logo = Data.Logo or "rbxassetid://108488788823423",
-                UpdateDate = Data.UpdateDate or "",
-                UpdateMonth = Data.UpdateMonth or "",
 
                 Pages = {},
                 Items = {},
@@ -628,34 +1114,47 @@ local Library do
                     BorderSizePixel = 0
                 })
 
-                if Window.UpdateDate ~= "" then
-                    Items["UpdateLabel"] = Instances:Create("TextLabel", {
-                        Parent = Items["Header"].Instance,
-                        Name = "\0",
-                        AnchorPoint = Vector2New(1, 0.5),
-                        AutomaticSize = Enum.AutomaticSize.XY,
-                        BackgroundTransparency = 1,
-                        FontFace = Library.FontRegular,
-                        Position = UDim2New(1, -12, 0.5, 0),
-                        RichText = true,
-                        Size = UDim2FromOffset(1, 1),
-                        Text = 'Updated Last <font color="#45475a">' .. Window.UpdateDate .. '</font> <font color="#ffffff">' .. Window.UpdateMonth .. "</font>",
-                        TextColor3 = Library.Theme["ActiveText"],
-                        TextSize = 12,
-                        BorderSizePixel = 0
-                    })
+                local AvatarUrl = ""
+                pcall(function()
+                    AvatarUrl = Players:GetUserThumbnailAsync(
+                        LocalPlayer.UserId,
+                        Enum.ThumbnailType.HeadShot,
+                        Enum.ThumbnailSize.Size48x48
+                    )
+                end)
 
-                    Items["UpdateIcon"] = Instances:Create("ImageLabel", {
-                        Parent = Items["UpdateLabel"].Instance,
-                        Name = "\0",
-                        AnchorPoint = Vector2New(0, 0.5),
-                        BackgroundTransparency = 1,
-                        Image = "rbxassetid://84304363968016",
-                        Position = UDim2New(0, -22, 0.5, 0),
-                        Size = UDim2FromOffset(15, 15),
-                        BorderSizePixel = 0
-                    })
-                end
+                Items["PlayerAvatar"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(1, 0.5),
+                    BackgroundTransparency = 1,
+                    Image = AvatarUrl,
+                    Position = UDim2New(1, -12, 0.5, 0),
+                    Size = UDim2FromOffset(22, 22),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UICorner", {
+                    Parent = Items["PlayerAvatar"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(1, 0)
+                })
+
+                Items["PlayerName"] = Instances:Create("TextLabel", {
+                    Parent = Items["Header"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(1, 0.5),
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    FontFace = Library.FontRegular,
+                    Position = UDim2New(1, -38, 0.5, 0),
+                    RichText = true,
+                    Size = UDim2FromOffset(1, 1),
+                    Text = LocalPlayer.DisplayName,
+                    TextColor3 = Library.Theme["ActiveText"],
+                    TextSize = 12,
+                    BorderSizePixel = 0
+                })
 
                 Items["Sidebar"] = Instances:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
@@ -885,8 +1384,8 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 1),
                     BackgroundColor3 = FromRGB(254, 254, 254),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 0, 1, 3),
-                    Size = UDim2FromOffset(25, 6),
+                    Position = UDim2New(0.5, 0, 1, -2),
+                    Size = UDim2FromOffset(25, 4),
                     BorderSizePixel = 0
                 })
 
@@ -903,37 +1402,6 @@ local Library do
                         ColorSequenceKeypoint.new(0, FromRGB(254, 254, 254)),
                         ColorSequenceKeypoint.new(1, FromRGB(147, 147, 147)),
                     })
-                })
-
-                Items["Divider"] = Instances:Create("Frame", {
-                    Parent = Page.Window.Items["TabHolder"].Instance,
-                    Name = "\0",
-                    BackgroundTransparency = 1,
-                    ClipsDescendants = true,
-                    Size = UDim2FromOffset(55, 5),
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UICorner", {
-                    Parent = Items["Divider"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 5)
-                })
-
-                local DividerLine = Instances:Create("Frame", {
-                    Parent = Items["Divider"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 1),
-                    BackgroundColor3 = Library.Theme["Separator"],
-                    Position = UDim2New(0.5, 0, 1, 3),
-                    Size = UDim2FromOffset(25, 6),
-                    BorderSizePixel = 0
-                }):AddToTheme({BackgroundColor3 = "Separator"})
-
-                Instances:Create("UICorner", {
-                    Parent = DividerLine.Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 12)
                 })
 
                 Items["SubTabHolder"] = Instances:Create("Frame", {
@@ -982,10 +1450,10 @@ local Library do
                 Items["PageContent"].Instance.Parent = Bool and Page.Window.Items["PageArea"].Instance or Library.UnusedHolder.Instance
 
                 if Page.Active then
-                    Items["TabButton"].Instance.BackgroundTransparency = 0.9
-                    Items["TabIcon"].Instance.ImageColor3 = Library.Theme["ActiveText"]
-                    Items["TabText"].Instance.TextColor3 = Library.Theme["ActiveText"]
-                    Items["TabPill"].Instance.BackgroundTransparency = 0
+                    Tween:Create(Items["TabButton"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundTransparency = 0.9})
+                    Tween:Create(Items["TabIcon"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {ImageColor3 = Library.Theme["ActiveText"]})
+                    Tween:Create(Items["TabText"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {TextColor3 = Library.Theme["ActiveText"]})
+                    Tween:Create(Items["TabPill"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundTransparency = 0})
 
                     for _, SubTab in Page.SubTabs do
                         if SubTab.Active then
@@ -993,10 +1461,10 @@ local Library do
                         end
                     end
                 else
-                    Items["TabButton"].Instance.BackgroundTransparency = 1
-                    Items["TabIcon"].Instance.ImageColor3 = Library.Theme["InactiveText"]
-                    Items["TabText"].Instance.TextColor3 = Library.Theme["InactiveText"]
-                    Items["TabPill"].Instance.BackgroundTransparency = 1
+                    Tween:Create(Items["TabButton"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundTransparency = 1})
+                    Tween:Create(Items["TabIcon"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {ImageColor3 = Library.Theme["InactiveText"]})
+                    Tween:Create(Items["TabText"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {TextColor3 = Library.Theme["InactiveText"]})
+                    Tween:Create(Items["TabPill"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundTransparency = 1})
 
                     for _, SubTab in Page.SubTabs do
                         SubTab:Show(false)
@@ -1086,8 +1554,8 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 1),
                     BackgroundColor3 = FromRGB(254, 254, 254),
                     BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 0, 1, 2),
-                    Size = UDim2FromOffset(34, 6),
+                    Position = UDim2New(0.5, 0, 1, -2),
+                    Size = UDim2FromOffset(34, 4),
                     BorderSizePixel = 0
                 })
 
@@ -1182,11 +1650,10 @@ local Library do
                 Items["Content"].Instance.Parent = Bool and SubTab.Page.Items["PageContent"].Instance or Library.UnusedHolder.Instance
 
                 if Bool then
-                    Items["TabName"].Instance.BackgroundTransparency = 0.8
+                    Tween:Create(Items["TabName"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundTransparency = 0.8, TextTransparency = 0})
                     Items["TabName"].Instance.TextColor3 = Library.Theme["ActiveText"]
-                    Items["TabName"].Instance.TextTransparency = 0
                     Items["TabName"].Instance.FontFace = Library.Font
-                    Items["SubTabPill"].Instance.BackgroundTransparency = 0
+                    Tween:Create(Items["SubTabPill"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundTransparency = 0})
 
                     local TabNameGradient = Items["TabName"].Instance:FindFirstChildOfClass("UIGradient")
                     if not TabNameGradient then
@@ -1200,11 +1667,10 @@ local Library do
                         })
                     end
                 else
-                    Items["TabName"].Instance.BackgroundTransparency = 1
+                    Tween:Create(Items["TabName"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundTransparency = 1, TextTransparency = 0.15})
                     Items["TabName"].Instance.TextColor3 = Library.Theme["InactiveText"]
-                    Items["TabName"].Instance.TextTransparency = 0.15
                     Items["TabName"].Instance.FontFace = Library.FontRegular
-                    Items["SubTabPill"].Instance.BackgroundTransparency = 1
+                    Tween:Create(Items["SubTabPill"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundTransparency = 1})
 
                     local TabNameGradient = Items["TabName"].Instance:FindFirstChildOfClass("UIGradient")
                     if TabNameGradient then
@@ -1218,6 +1684,123 @@ local Library do
                     Value.Active = (Value == SubTab)
                     Value:Show(Value == SubTab)
                 end
+            end
+
+            function SubTab:Section(SectionData)
+                SectionData = SectionData or {}
+
+                local Section = {
+                    Window = SubTab.Window,
+                    Page = SubTab.Page,
+                    SubTab = SubTab,
+
+                    Name = SectionData.Name or "Section",
+                    Side = SectionData.Side or "Left",
+                    Icon = SectionData.Icon or "",
+
+                    Items = {}
+                }
+
+                local ColumnParent
+                if Section.Side == "Right" then
+                    ColumnParent = SubTab.Items["RightColumn"].Instance
+                else
+                    ColumnParent = SubTab.Items["LeftColumn"].Instance
+                end
+
+                local SItems = {} do
+                    SItems["SectionFrame"] = Instances:Create("Frame", {
+                        Parent = ColumnParent,
+                        Name = "\0",
+                        AutomaticSize = Enum.AutomaticSize.Y,
+                        BackgroundColor3 = Library.Theme["SectionBackground"],
+                        ClipsDescendants = true,
+                        Size = UDim2New(1, 0, 0, 60),
+                        BorderSizePixel = 0
+                    }):AddToTheme({BackgroundColor3 = "SectionBackground"})
+
+                    Instances:Create("UICorner", {
+                        Parent = SItems["SectionFrame"].Instance,
+                        Name = "\0",
+                        CornerRadius = UDimNew(0, 6)
+                    })
+
+                    SItems["Header"] = Instances:Create("Frame", {
+                        Parent = SItems["SectionFrame"].Instance,
+                        Name = "\0",
+                        AnchorPoint = Vector2New(0.5, 0),
+                        Position = UDim2FromScale(0.5, 0),
+                        BackgroundColor3 = Library.Theme["SectionHeader"],
+                        Size = UDim2New(1, 0, 0, 30),
+                        BorderSizePixel = 0
+                    }):AddToTheme({BackgroundColor3 = "SectionHeader"})
+
+                    Instances:Create("UICorner", {
+                        Parent = SItems["Header"].Instance,
+                        Name = "\0",
+                        CornerRadius = UDimNew(0, 6)
+                    })
+
+                    if Section.Icon ~= "" then
+                        SItems["SectionIcon"] = Instances:Create("ImageLabel", {
+                            Parent = SItems["Header"].Instance,
+                            Name = "\0",
+                            AnchorPoint = Vector2New(0, 0.5),
+                            BackgroundTransparency = 1,
+                            Image = Section.Icon,
+                            ImageColor3 = Library.Theme["ActiveText"],
+                            Position = UDim2New(0, 10, 0.5, 0),
+                            Size = UDim2FromOffset(14, 14),
+                            BorderSizePixel = 0
+                        })
+                    end
+
+                    SItems["SectionText"] = Instances:Create("TextLabel", {
+                        Parent = SItems["Header"].Instance,
+                        Name = "\0",
+                        AnchorPoint = Vector2New(0, 0.5),
+                        AutomaticSize = Enum.AutomaticSize.XY,
+                        BackgroundTransparency = 1,
+                        FontFace = Library.Font,
+                        Position = UDim2New(0, Section.Icon ~= "" and 30 or 12, 0.5, 0),
+                        Size = UDim2FromOffset(1, 1),
+                        Text = Section.Name,
+                        TextColor3 = Library.Theme["ActiveText"],
+                        TextSize = 12,
+                        BorderSizePixel = 0
+                    })
+
+                    SItems["Content"] = Instances:Create("Frame", {
+                        Parent = SItems["SectionFrame"].Instance,
+                        Name = "\0",
+                        AnchorPoint = Vector2New(0.5, 0),
+                        Position = UDim2New(0.5, 0, 0, 30),
+                        BackgroundTransparency = 1,
+                        Size = UDim2New(1, 0, 0, 0),
+                        AutomaticSize = Enum.AutomaticSize.Y,
+                        BorderSizePixel = 0
+                    })
+
+                    Instances:Create("UIListLayout", {
+                        Parent = SItems["Content"].Instance,
+                        Name = "\0",
+                        Padding = UDimNew(0, 6),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    })
+
+                    Instances:Create("UIPadding", {
+                        Parent = SItems["Content"].Instance,
+                        Name = "\0",
+                        PaddingTop = UDimNew(0, 6),
+                        PaddingBottom = UDimNew(0, 10),
+                        PaddingRight = UDimNew(0, 10),
+                        PaddingLeft = UDimNew(0, 10)
+                    })
+
+                    Section.Items = SItems
+                end
+
+                return setmetatable(Section, Library.Sections)
             end
 
             Items["SubTabButton"]:Connect("MouseButton1Down", function()
@@ -1236,134 +1819,6 @@ local Library do
 
             TableInsert(SubTab.Page.SubTabs, SubTab)
             return SubTab
-        end
-
-        Library.Pages.Section = function(self, Data)
-            Data = Data or {}
-
-            local SubTab = Data.SubTab
-            if not SubTab then
-                if #self.SubTabs > 0 then
-                    SubTab = self.SubTabs[1]
-                end
-            end
-
-            if not SubTab then
-                return warn("Section requires a SubTab. Create a SubTab first.")
-            end
-
-            local Section = {
-                Window = self.Window,
-                Page = self,
-                SubTab = SubTab,
-
-                Name = Data.Name or "Section",
-                Side = Data.Side or "Left",
-                Icon = Data.Icon or "",
-
-                Items = {}
-            }
-
-            local ColumnParent
-            if Section.Side == "Right" then
-                ColumnParent = SubTab.Items["RightColumn"].Instance
-            else
-                ColumnParent = SubTab.Items["LeftColumn"].Instance
-            end
-
-            local Items = {} do
-                Items["SectionFrame"] = Instances:Create("Frame", {
-                    Parent = ColumnParent,
-                    Name = "\0",
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = Library.Theme["SectionBackground"],
-                    ClipsDescendants = true,
-                    Size = UDim2New(1, 0, 0, 60),
-                    BorderSizePixel = 0
-                }):AddToTheme({BackgroundColor3 = "SectionBackground"})
-
-                Instances:Create("UICorner", {
-                    Parent = Items["SectionFrame"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 6)
-                })
-
-                Items["Header"] = Instances:Create("Frame", {
-                    Parent = Items["SectionFrame"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0),
-                    Position = UDim2FromScale(0.5, 0),
-                    BackgroundColor3 = Library.Theme["SectionHeader"],
-                    Size = UDim2New(1, 0, 0, 30),
-                    BorderSizePixel = 0
-                }):AddToTheme({BackgroundColor3 = "SectionHeader"})
-
-                Instances:Create("UICorner", {
-                    Parent = Items["Header"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 6)
-                })
-
-                if Section.Icon ~= "" then
-                    Items["SectionIcon"] = Instances:Create("ImageLabel", {
-                        Parent = Items["Header"].Instance,
-                        Name = "\0",
-                        AnchorPoint = Vector2New(0, 0.5),
-                        BackgroundTransparency = 1,
-                        Image = Section.Icon,
-                        ImageColor3 = Library.Theme["ActiveText"],
-                        Position = UDim2New(0, 10, 0.5, 0),
-                        Size = UDim2FromOffset(14, 14),
-                        BorderSizePixel = 0
-                    })
-                end
-
-                Items["SectionText"] = Instances:Create("TextLabel", {
-                    Parent = Items["Header"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0, 0.5),
-                    AutomaticSize = Enum.AutomaticSize.XY,
-                    BackgroundTransparency = 1,
-                    FontFace = Library.Font,
-                    Position = UDim2New(0, Section.Icon ~= "" and 30 or 12, 0.5, 0),
-                    Size = UDim2FromOffset(1, 1),
-                    Text = Section.Name,
-                    TextColor3 = Library.Theme["ActiveText"],
-                    TextSize = 12,
-                    BorderSizePixel = 0
-                })
-
-                Items["Content"] = Instances:Create("Frame", {
-                    Parent = Items["SectionFrame"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0),
-                    Position = UDim2New(0.5, 0, 0, 30),
-                    BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UIListLayout", {
-                    Parent = Items["Content"].Instance,
-                    Name = "\0",
-                    Padding = UDimNew(0, 6),
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                })
-
-                Instances:Create("UIPadding", {
-                    Parent = Items["Content"].Instance,
-                    Name = "\0",
-                    PaddingTop = UDimNew(0, 6),
-                    PaddingBottom = UDimNew(0, 10),
-                    PaddingRight = UDimNew(0, 10),
-                    PaddingLeft = UDimNew(0, 10)
-                })
-
-                Section.Items = Items
-            end
-
-            return setmetatable(Section, Library.Sections)
         end
 
         Library.Sections.Toggle = function(self, Data)
