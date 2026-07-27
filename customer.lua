@@ -2011,6 +2011,10 @@ local Library do
                 Toggle:Set(not Toggle.Value)
             end)
 
+            Library.SetFlags[Toggle.Flag] = function(Value)
+                Toggle:Set(Value)
+            end
+
             Toggle:Set(Toggle.Default)
             TableInsert(Toggle.Section.Items, Toggle)
             return Toggle
@@ -2275,13 +2279,6 @@ local Library do
             Slider:Set(Slider.Default)
             TableInsert(Slider.Section.Items, Slider)
             return Slider
-        end
-
-        Library.SetFlags[Toggle.Flag] = function(Value)
-                Toggle:Set(Value)
-            end
-
-            return Toggle
         end
     end
 end
