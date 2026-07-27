@@ -550,7 +550,8 @@ local Library do
                     Name = "\0",
                     AutomaticSize = Enum.AutomaticSize.XY,
                     BackgroundTransparency = 1,
-                    Size = UDim2FromOffset(1, 1)
+                    Size = UDim2FromOffset(1, 1),
+                    Position = UDim2New(0, 20, 0, 20)
                 })
 
                 Instances:Create("UIListLayout", {
@@ -816,7 +817,7 @@ local Library do
                     RichText = true,
                     Size = UDim2FromOffset(1, 1),
                     Text = Description,
-                    TextColor3 = FromRGB(66, 68, 86),
+                    TextColor3 = FromRGB(69, 71, 90),
                     TextSize = 14,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     BorderSizePixel = 0
@@ -921,14 +922,88 @@ local Library do
                     Name = "\0",
                     AutomaticSize = Enum.AutomaticSize.XY,
                     BackgroundColor3 = Library.Theme["Background"],
-                    Size = UDim2New(1, 1, 0, 20),
+                    Size = UDim2New(1, 0, 0, 20),
+                    BorderSizePixel = 0
+                })
+                
+                local Holder3 = Instances:Create("Frame", {
+                    Parent = Items["ProgressHolder"].Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 1),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Holder3.Instance,
+                    Name = "\0",
+                    Padding = UDimNew(0, 6),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                local TextHolder3 = Instances:Create("Frame", {
+                    Parent = Holder3.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2FromOffset(1, 10),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = TextHolder3.Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    Padding = UDimNew(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = TextHolder3.Instance,
+                    Name = "\0",
+                    PaddingLeft = UDimNew(0, 12),
+                    PaddingTop = UDimNew(0, 6)
+                })
+
+                local ProgressInner = Instances:Create("Frame", {
+                    Parent = Holder3.Instance,
+                    Name = "\0",
+                    AutomaticSize = Enum.AutomaticSize.XY,
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 1, 0, 5),
+                    BorderSizePixel = 0
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = ProgressInner.Instance,
+                    Name = "\0",
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    Padding = UDimNew(0, 12),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+                
+                Instances:Create("UIPadding", {
+                    Parent = ProgressInner.Instance,
+                    Name = "\0",
+                })
+
+                Items["ProgressBar"] = Instances:Create("Frame", {
+                    Parent = ProgressInner.Instance,
+                    Name = "\0",
+                    BackgroundColor3 = NotifColor,
+                    Size = UDim2New(0.871795, 1, 0, 5),
                     BorderSizePixel = 0
                 })
 
                 Instances:Create("UICorner", {
+                    Parent = Items["ProgressBar"].Instance,
+                    Name = "\0"
+                })
+                
+                Instances:Create("UICorner", {
                     Parent = Items["ProgressHolder"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 8)
+                    Name = "\0"
                 })
 
                 Instances:Create("UIListLayout", {
@@ -942,50 +1017,6 @@ local Library do
                     Parent = Items["ProgressHolder"].Instance,
                     Name = "\0",
                     PaddingRight = UDimNew(0, 12)
-                })
-
-                local ProgressInner = Instances:Create("Frame", {
-                    Parent = Items["ProgressHolder"].Instance,
-                    Name = "\0",
-                    AutomaticSize = Enum.AutomaticSize.XY,
-                    BackgroundTransparency = 1,
-                    Size = UDim2FromOffset(1, 1),
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UIListLayout", {
-                    Parent = ProgressInner.Instance,
-                    Name = "\0",
-                    Padding = UDimNew(0, 6),
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                })
-
-                local ProgressBarFrame = Instances:Create("Frame", {
-                    Parent = ProgressInner.Instance,
-                    Name = "\0",
-                    AutomaticSize = Enum.AutomaticSize.XY,
-                    BackgroundTransparency = 1,
-                    Size = UDim2New(1, 1, 0, 5),
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UIPadding", {
-                    Parent = ProgressBarFrame.Instance,
-                    Name = "\0"
-                })
-
-                Items["ProgressBar"] = Instances:Create("Frame", {
-                    Parent = ProgressBarFrame.Instance,
-                    Name = "\0",
-                    BackgroundColor3 = NotifColor,
-                    Size = UDim2New(1, 0, 0, 5),
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UICorner", {
-                    Parent = Items["ProgressBar"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(0, 4)
                 })
             end
 
