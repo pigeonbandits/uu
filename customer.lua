@@ -1722,7 +1722,7 @@ local Library do
                         Name = "\0",
                         AutomaticSize = Enum.AutomaticSize.Y,
                         BackgroundColor3 = Library.Theme["SectionBackground"],
-                        ClipsDescendants = true,
+                        ClipsDescendants = false,
                         Size = UDim2New(1, 0, 0, 60),
                         BorderSizePixel = 0
                     }):AddToTheme({BackgroundColor3 = "SectionBackground"})
@@ -1929,11 +1929,12 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 25, 1, 25),
                     AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    Image = "rbxassetid://5028857084",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
+                    ZIndex = 0,
                     BorderSizePixel = 0,
-                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
+                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
                 }):AddToTheme({ImageColor3 = "Accent"})
             end
 
@@ -2035,12 +2036,12 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 30, 1, 30),
                     AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    Image = "rbxassetid://5028857084",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
                     ZIndex = 0,
                     BorderSizePixel = 0,
-                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
+                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
                 }):AddToTheme({ImageColor3 = "Accent"})
             end
 
@@ -2164,21 +2165,6 @@ local Library do
                     CornerRadius = UDimNew(1, 0)
                 })
                 
-                Items["Glow"] = Instances:Create("ImageLabel", {
-                    Parent = Items["Fill"].Instance,
-                    Name = "\0",
-                    ImageColor3 = Library.Theme["Accent"],
-                    ScaleType = Enum.ScaleType.Slice,
-                    ImageTransparency = 1,
-                    Size = UDim2New(1, 14, 1, 14),
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "http://www.roblox.com/asset/?id=18245826428",
-                    BackgroundTransparency = 1,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
-                    BorderSizePixel = 0,
-                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
-                }):AddToTheme({ImageColor3 = "Accent"})
-
                 Items["Circle"] = Instances:Create("Frame", {
                     Parent = Items["Fill"].Instance,
                     Name = "\0",
@@ -2194,6 +2180,22 @@ local Library do
                     Name = "\0",
                     CornerRadius = UDimNew(1, 0)
                 })
+
+                Items["Glow"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Circle"].Instance,
+                    Name = "\0",
+                    ImageColor3 = Library.Theme["Accent"],
+                    ScaleType = Enum.ScaleType.Slice,
+                    ImageTransparency = 1,
+                    Size = UDim2New(1, 25, 1, 25),
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Image = "rbxassetid://5028857084",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    ZIndex = 0,
+                    BorderSizePixel = 0,
+                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
+                }):AddToTheme({ImageColor3 = "Accent"})
             end
 
             function Slider:Set(Value)
