@@ -1145,55 +1145,13 @@ local Library do
                     AnchorPoint = Vector2New(0, 0.5),
                     AutomaticSize = Enum.AutomaticSize.XY,
                     BackgroundTransparency = 1,
-                    FontFace = Library.Font,
+                    FontFace = Library.FontSemiBold,
                     Position = UDim2New(0, 36, 0.5, 0),
                     RichText = true,
                     Size = UDim2FromOffset(1, 1),
                     Text = Window.Name .. (Window.GameName ~= "" and (' <font color="#45475a">' .. Window.GameName .. "</font>") or ""),
                     TextColor3 = Library.Theme["ActiveText"],
                     TextSize = 14,
-                    BorderSizePixel = 0
-                })
-
-                local AvatarUrl = ""
-                pcall(function()
-                    AvatarUrl = Players:GetUserThumbnailAsync(
-                        LocalPlayer.UserId,
-                        Enum.ThumbnailType.HeadShot,
-                        Enum.ThumbnailSize.Size48x48
-                    )
-                end)
-
-                Items["PlayerAvatar"] = Instances:Create("ImageLabel", {
-                    Parent = Items["Header"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(1, 0.5),
-                    BackgroundTransparency = 1,
-                    Image = AvatarUrl,
-                    Position = UDim2New(1, -12, 0.5, 0),
-                    Size = UDim2FromOffset(22, 22),
-                    BorderSizePixel = 0
-                })
-
-                Instances:Create("UICorner", {
-                    Parent = Items["PlayerAvatar"].Instance,
-                    Name = "\0",
-                    CornerRadius = UDimNew(1, 0)
-                })
-
-                Items["PlayerName"] = Instances:Create("TextLabel", {
-                    Parent = Items["Header"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(1, 0.5),
-                    AutomaticSize = Enum.AutomaticSize.XY,
-                    BackgroundTransparency = 1,
-                    FontFace = Library.FontRegular,
-                    Position = UDim2New(1, -38, 0.5, 0),
-                    RichText = true,
-                    Size = UDim2FromOffset(1, 1),
-                    Text = LocalPlayer.DisplayName,
-                    TextColor3 = Library.Theme["ActiveText"],
-                    TextSize = 12,
                     BorderSizePixel = 0
                 })
 
@@ -1426,7 +1384,7 @@ local Library do
                     BackgroundColor3 = FromRGB(254, 254, 254),
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 1, -2),
-                    Size = UDim2FromOffset(25, 4),
+                    Size = UDim2FromOffset(25, 2),
                     BorderSizePixel = 0
                 })
 
@@ -1596,7 +1554,7 @@ local Library do
                     BackgroundColor3 = FromRGB(254, 254, 254),
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 1, -2),
-                    Size = UDim2FromOffset(34, 4),
+                    Size = UDim2FromOffset(34, 2),
                     BorderSizePixel = 0
                 })
 
@@ -2123,7 +2081,7 @@ local Library do
                     Text = "",
                     AutoButtonColor = false,
                     BackgroundTransparency = 1,
-                    Size = UDim2New(1, 0, 0, 34),
+                    Size = UDim2New(1, 0, 0, 38),
                     BorderSizePixel = 0
                 })
 
@@ -2162,7 +2120,7 @@ local Library do
                     Name = "\0",
                     AnchorPoint = Vector2New(0, 1),
                     Position = UDim2New(0, 0, 1, -4),
-                    Size = UDim2New(1, 0, 0, 8),
+                    Size = UDim2New(1, 0, 0, 12),
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["ElementBackground"]
                 }):AddToTheme({BackgroundColor3 = "ElementBackground"})
@@ -2215,7 +2173,7 @@ local Library do
                     AnchorPoint = Vector2New(1, 0.5),
                     BackgroundColor3 = FromRGB(0, 0, 0),
                     Position = UDim2New(1, -2, 0.5, 0),
-                    Size = UDim2New(0, 6, 0, 6),
+                    Size = UDim2New(0, 8, 0, 8),
                     BorderSizePixel = 0
                 })
 
