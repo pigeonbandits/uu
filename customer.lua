@@ -199,6 +199,14 @@ local Library do
             return self
         end
 
+        Instances.ChangeItemTheme = function(self, Properties)
+            if not self.Instance then
+                return
+            end
+
+            Library:ChangeItemTheme(self, Properties)
+        end
+
         Instances.Connect = function(self, Event, Callback, Name)
             if not self.Instance then
                 return
@@ -228,12 +236,13 @@ local Library do
             self = nil
         end
 
-        Instances.MakeDraggable = function(self)
+        Instances.MakeDraggable = function(self, DragTarget)
             if not self.Instance then
                 return
             end
 
-            local Gui = self.Instance
+            local TargetItem = DragTarget or self
+            local Gui = TargetItem.Instance
             local Dragging = false
             local DragStart
             local StartPosition
@@ -249,7 +258,7 @@ local Library do
                 NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
                 NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
 
-                self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
+                TargetItem:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
             end
 
             local InputChanged
@@ -283,6 +292,22 @@ local Library do
             end)
 
             return Dragging
+        end
+
+        Instances.OnHover = function(self, Function)
+            if not self.Instance then
+                return
+            end
+
+            return Library:Connect(self.Instance.MouseEnter, Function)
+        end
+
+        Instances.OnHoverLeave = function(self, Function)
+            if not self.Instance then
+                return
+            end
+
+            return Library:Connect(self.Instance.MouseLeave, Function)
         end
     end
 
@@ -404,6 +429,16 @@ local Library do
         self.ThemeMap[Item] = ThemeData
     end
 
+    Library.ChangeItemTheme = function(self, Item, Properties)
+        Item = Item.Instance or Item
+
+        if not self.ThemeMap[Item] then
+            return
+        end
+
+        self.ThemeMap[Item].Properties = Properties
+    end
+
     Library.ChangeTheme = function(self, Theme, Color)
         self.Theme[Theme] = Color
 
@@ -428,6 +463,88 @@ local Library do
     end
 
     do
+        Library.Watermark = function(self, Name, Logo)
+            local Watermark = {}
+
+            local Items = {} do
+                Items["Watermark"] = Instances:Create("Frame", {
+                    Parent = Library.Holder.Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0.5, 0),
+                    Position = UDim2New(0.5, 0, 0, 20),
+                    Size = UDim2New(0, 0, 0, 35),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundColor3 = Library.Theme["Background"]
+                }):AddToTheme({BackgroundColor3 = "Background"})
+
+                Items["Watermark"]:MakeDraggable()
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Watermark"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["Watermark"].Instance,
+                    Name = "\0",
+                    PaddingRight = UDimNew(0, 8),
+                    PaddingLeft = UDimNew(0, 8)
+                })
+
+                Items["Logo"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Watermark"].Instance,
+                    Name = "\0",
+                    ScaleType = Enum.ScaleType.Fit,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Image = Logo,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    Size = UDim2New(0, 25, 0, 25),
+                    BorderSizePixel = 0
+                })
+
+                Items["Text"] = Instances:Create("TextLabel", {
+                    Parent = Items["Watermark"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["ActiveText"],
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Size = UDim2New(0, 0, 0, 15),
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 34, 0.5, -1),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 18
+                })
+            end
+
+            function Watermark:SetText(Text)
+                Items["Text"].Instance.Text = tostring(Text)
+            end
+
+            function Watermark:SetVisibility(Bool)
+                Items["Watermark"].Instance.Visible = Bool
+            end
+
+            function Watermark:SetCenter()
+                local CenterPosition = Items["Watermark"].Instance.AbsolutePosition
+                task.wait()
+                Items["Watermark"].Instance.AnchorPoint = Vector2New(0, 0)
+                Items["Watermark"].Instance.Position = UDim2New(0, CenterPosition.X, 0, CenterPosition.Y)
+            end
+
+            Watermark:SetText(Name)
+            Watermark:SetCenter()
+
+            return Watermark
+        end
+
         Library.Window = function(self, Data)
             Data = Data or {}
 
@@ -471,7 +588,7 @@ local Library do
                     BorderSizePixel = 0
                 })
 
-                Items["Header"]:MakeDraggable()
+                Items["Header"]:MakeDraggable(Items["MainFrame"])
 
                 Instances:Create("Frame", {
                     Parent = Items["Header"].Instance,
@@ -496,13 +613,13 @@ local Library do
                 })
 
                 Items["LibraryName"] = Instances:Create("TextLabel", {
-                    Parent = Items["LibraryIcon"].Instance,
+                    Parent = Items["Header"].Instance,
                     Name = "\0",
                     AnchorPoint = Vector2New(0, 0.5),
                     AutomaticSize = Enum.AutomaticSize.XY,
                     BackgroundTransparency = 1,
                     FontFace = Library.Font,
-                    Position = UDim2New(0, 24, 0.5, 0),
+                    Position = UDim2New(0, 36, 0.5, 0),
                     RichText = true,
                     Size = UDim2FromOffset(1, 1),
                     Text = Window.Name .. (Window.GameName ~= "" and (' <font color="#45475a">' .. Window.GameName .. "</font>") or ""),
@@ -563,8 +680,8 @@ local Library do
                 Items["TabHolder"] = Instances:Create("Frame", {
                     Parent = Items["Sidebar"].Instance,
                     Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    Position = UDim2FromScale(0.5, 0.5),
+                    AnchorPoint = Vector2New(0.5, 0),
+                    Position = UDim2FromScale(0.5, 0),
                     Size = UDim2FromOffset(75, 453),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0
@@ -581,15 +698,14 @@ local Library do
                 Instances:Create("UIPadding", {
                     Parent = Items["TabHolder"].Instance,
                     Name = "\0",
-                    PaddingLeft = UDimNew(0, 9),
                     PaddingTop = UDimNew(0, 10)
                 })
 
                 Items["SubHeader"] = Instances:Create("Frame", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    Position = UDim2New(0, 75 + 310, 0, 37 + 25),
+                    AnchorPoint = Vector2New(0, 0),
+                    Position = UDim2New(0, 75, 0, 37),
                     Size = UDim2FromOffset(621, 51),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0
@@ -1231,21 +1347,185 @@ local Library do
                 Instances:Create("UIListLayout", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    Padding = UDimNew(0, 4),
+                    Padding = UDimNew(0, 6),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
                 Instances:Create("UIPadding", {
                     Parent = Items["Content"].Instance,
                     Name = "\0",
-                    PaddingTop = UDimNew(0, 5),
-                    PaddingBottom = UDimNew(0, 10)
+                    PaddingTop = UDimNew(0, 6),
+                    PaddingBottom = UDimNew(0, 10),
+                    PaddingRight = UDimNew(0, 10),
+                    PaddingLeft = UDimNew(0, 10)
                 })
 
                 Section.Items = Items
             end
 
             return setmetatable(Section, Library.Sections)
+        end
+
+        Library.Sections.Toggle = function(self, Data)
+            Data = Data or {}
+
+            local Toggle = {
+                Window = self.Window,
+                Page = self.Page,
+                Section = self,
+
+                Name = Data.Name or Data.name or "Toggle",
+                Flag = Data.Flag or Data.flag or Library:NextFlag(),
+                Default = Data.Default or Data.default or false,
+                Callback = Data.Callback or Data.callback or function() end,
+
+                Value = false
+            }
+
+            local Items = {} do
+                Items["Toggle"] = Instances:Create("TextButton", {
+                    Parent = Toggle.Section.Items["Content"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    AutoButtonColor = false,
+                    AnchorPoint = Vector2New(1, 0),
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 0, 0, 20),
+                    BorderSizePixel = 0,
+                    TextSize = 14
+                })
+
+                Items["Text"] = Instances:Create("TextLabel", {
+                    Parent = Items["Toggle"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = Library.Theme["ActiveText"],
+                    TextTransparency = 0.5,
+                    Text = Toggle.Name,
+                    Size = UDim2New(0, 0, 0, 15),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BorderSizePixel = 0,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 16
+                })
+
+                Items["Indicator"] = Instances:Create("Frame", {
+                    Parent = Items["Toggle"].Instance,
+                    Name = "\0",
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, 0, 0.5, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(0, 35, 0, 18),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = Library.Theme["ElementBackground"]
+                }):AddToTheme({BackgroundColor3 = "ElementBackground"})
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Indicator"].Instance,
+                    Name = "\0"
+                })
+
+                Instances:Create("UIStroke", {
+                    Parent = Items["Indicator"].Instance,
+                    Name = "\0",
+                    Color = Library.Theme["Stroke"],
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({Color = "Stroke"})
+
+                Items["Circle"] = Instances:Create("Frame", {
+                    Parent = Items["Indicator"].Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    BackgroundTransparency = 0.5,
+                    Position = UDim2New(0, 4, 0.5, 0),
+                    Size = UDim2New(0, 10, 0, 10),
+                    BorderSizePixel = 0
+                }):AddToTheme({BackgroundColor3 = function() return FromRGB(255, 255, 255) end})
+
+                Instances:Create("UICorner", {
+                    Parent = Items["Circle"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(1, 0)
+                })
+
+                Items["Glow"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Circle"].Instance,
+                    Name = "\0",
+                    ImageColor3 = Library.Theme["Accent"],
+                    ScaleType = Enum.ScaleType.Slice,
+                    ImageTransparency = 1,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 25, 1, 25),
+                    AnchorPoint = Vector2New(0.5, 0.5),
+                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    BorderSizePixel = 0,
+                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
+                }):AddToTheme({ImageColor3 = "Accent"})
+            end
+
+            function Toggle:Get()
+                return Toggle.Value
+            end
+
+            function Toggle:Set(Value)
+                Toggle.Value = Value
+                Library.Flags[Toggle.Flag] = Value
+
+                if Toggle.Value then
+                    Items["Glow"]:Tween(nil, {ImageTransparency = 0.7})
+
+                    Items["Circle"]:ChangeItemTheme({BackgroundColor3 = "Accent"})
+                    Items["Circle"]:Tween(nil, {
+                        AnchorPoint = Vector2New(1, 0.5),
+                        Position = UDim2New(1, -3, 0.5, 0),
+                        BackgroundTransparency = 0,
+                        BackgroundColor3 = Library.Theme.Accent
+                    })
+
+                    Items["Text"]:Tween(nil, {TextTransparency = 0})
+                else
+                    Items["Glow"]:Tween(nil, {ImageTransparency = 1})
+
+                    Items["Circle"]:ChangeItemTheme({BackgroundColor3 = function() return FromRGB(255, 255, 255) end})
+                    Items["Circle"]:Tween(nil, {
+                        AnchorPoint = Vector2New(0, 0.5),
+                        Position = UDim2New(0, 3, 0.5, 0),
+                        BackgroundTransparency = 0.6,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    })
+
+                    Items["Text"]:Tween(nil, {TextTransparency = 0.5})
+                end
+
+                if Toggle.Callback then
+                    Library:SafeCall(Toggle.Callback, Toggle.Value)
+                end
+            end
+
+            function Toggle:SetVisibility(Bool)
+                Items["Toggle"].Instance.Visible = Bool
+            end
+
+            Items["Toggle"]:Connect("MouseButton1Down", function()
+                Toggle:Set(not Toggle.Value)
+            end)
+
+            Toggle:Set(Toggle.Default)
+
+            Library.SetFlags[Toggle.Flag] = function(Value)
+                Toggle:Set(Value)
+            end
+
+            return Toggle
         end
     end
 end
