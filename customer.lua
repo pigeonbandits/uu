@@ -1497,6 +1497,7 @@ local Library do
                     Tween:Create(Items["TabIcon"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {ImageColor3 = Library.Theme["ActiveText"]})
                     Tween:Create(Items["TabText"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {TextColor3 = Library.Theme["ActiveText"]})
                     Tween:Create(Items["TabPill"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundTransparency = 0})
+                    Tween:Create(Items["TabPillGlow"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {ImageTransparency = 0.5})
 
                     for _, SubTab in Page.SubTabs do
                         if SubTab.Active then
@@ -1508,6 +1509,7 @@ local Library do
                     Tween:Create(Items["TabIcon"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {ImageColor3 = Library.Theme["InactiveText"]})
                     Tween:Create(Items["TabText"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {TextColor3 = Library.Theme["InactiveText"]})
                     Tween:Create(Items["TabPill"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundTransparency = 1})
+                    Tween:Create(Items["TabPillGlow"], TweenInfo.new(0.25, Enum.EasingStyle.Quart), {ImageTransparency = 1})
 
                     for _, SubTab in Page.SubTabs do
                         SubTab:Show(false)
@@ -1611,10 +1613,9 @@ local Library do
                     ImageTransparency = 1,
                     Size = UDim2New(1, 16, 1, 16),
                     AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "rbxassetid://5028857084",
+                    Image = "rbxassetid://9886659671",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
-                    ZIndex = 0,
                     BorderSizePixel = 0,
                     SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
                 })
@@ -1714,6 +1715,7 @@ local Library do
                     Items["TabName"].Instance.TextColor3 = Library.Theme["ActiveText"]
                     Items["TabName"].Instance.FontFace = Library.Font
                     Tween:Create(Items["SubTabPill"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundTransparency = 0})
+                    Tween:Create(Items["SubTabPillGlow"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 0.5})
 
                     local TabNameGradient = Items["TabName"].Instance:FindFirstChildOfClass("UIGradient")
                     if not TabNameGradient then
@@ -1731,6 +1733,7 @@ local Library do
                     Items["TabName"].Instance.TextColor3 = Library.Theme["InactiveText"]
                     Items["TabName"].Instance.FontFace = Library.FontRegular
                     Tween:Create(Items["SubTabPill"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {BackgroundTransparency = 1})
+                    Tween:Create(Items["SubTabPillGlow"], TweenInfo.new(0.2, Enum.EasingStyle.Quart), {ImageTransparency = 1})
 
                     local TabNameGradient = Items["TabName"].Instance:FindFirstChildOfClass("UIGradient")
                     if TabNameGradient then
@@ -1739,11 +1742,20 @@ local Library do
                 end
             end
 
-            function SubTab:Activate()
+            Items["SubTabButton"]:Connect("MouseButton1Down", function()
                 for _, Value in SubTab.Page.SubTabs do
-                    Value.Active = (Value == SubTab)
+                    if Value == SubTab and SubTab.Active then
+                        return
+                    end
+
+                    Value.Active = Value == SubTab
                     Value:Show(Value == SubTab)
                 end
+            end)
+
+            if #SubTab.Page.SubTabs == 0 then
+                SubTab.Active = true
+                SubTab:Show(true)
             end
 
             function SubTab:Section(SectionData)
@@ -1981,12 +1993,11 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Size = UDim2New(1, 25, 1, 25),
                     AnchorPoint = Vector2New(0.5, 0.5),
-                    Image = "rbxassetid://5028857084",
+                    Image = "rbxassetid://18245826428",
                     BackgroundTransparency = 1,
                     Position = UDim2New(0.5, 0, 0.5, 0),
-                    ZIndex = 0,
                     BorderSizePixel = 0,
-                    SliceCenter = RectNew(Vector2New(24, 24), Vector2New(76, 76))
+                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
                 }):AddToTheme({ImageColor3 = "Accent"})
             end
 
@@ -2174,7 +2185,7 @@ local Library do
                     AutoButtonColor = false,
                     AnchorPoint = Vector2New(1, 0.5),
                     Position = UDim2New(1, -40, 0.5, 0),
-                    Size = UDim2New(0, 200, 0, 9),
+                    Size = UDim2New(1, -120, 0, 9),
                     Selectable = false,
                     BorderSizePixel = 0,
                     BackgroundColor3 = Library.Theme["ElementBackground"]
